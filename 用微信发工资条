@@ -1,0 +1,122 @@
+import win32gui
+import easygui as g
+from ast import literal_eval
+import time
+import win32api
+import win32con
+
+
+def ctrl_v():
+    win32api.keybd_event(17, 0, 0, 0)  # ctrl键位码是17
+    win32api.keybd_event(86, 0, 0, 0)  # v键位码是86
+    win32api.keybd_event(86, 0, win32con.KEYEVENTF_KEYUP, 0)  # 释放按键
+    win32api.keybd_event(17, 0, win32con.KEYEVENTF_KEYUP, 0)
+
+
+def alts():
+    win32api.keybd_event(18, 0, 0, 0)    # Alt
+    win32api.keybd_event(83, 0, 0, 0)  # s
+    win32api.keybd_event(83, 0, win32con.KEYEVENTF_KEYUP, 0)  # 释放按键
+    win32api.keybd_event(18, 0, win32con.KEYEVENTF_KEYUP, 0)
+
+
+def enter():
+    win32api.keybd_event(13, 0, 0, 0)    # enter
+    win32api.keybd_event(13, 0, win32con.KEYEVENTF_KEYUP, 0)  # 释放按键
+
+
+def ctrl_c():
+    win32api.keybd_event(17, 0, 0, 0)  # ctrl键位码是17
+    win32api.keybd_event(67, 0, 0, 0)  # c键位码是86
+    win32api.keybd_event(67, 0, win32con.KEYEVENTF_KEYUP, 0)  # 释放按键
+    win32api.keybd_event(17, 0, win32con.KEYEVENTF_KEYUP, 0)
+
+
+def excel():  # 切换到wps窗口
+    win32gui.SetForegroundWindow(num4[0])  # 切换到wps窗口句柄, 窗口不能最小化
+    time.sleep(2)
+
+
+def wei_xin():  # 切换到微信窗口
+    win32gui.SetForegroundWindow(num3[0])  # 切换到wps窗口句柄, 窗口不能最小化
+    time.sleep(2)
+
+
+def gz():
+    win32api.keybd_event(17, 0, 0, 0)  # ctrl
+    win32api.keybd_event(84, 0, 0, 0)  # T
+    win32api.keybd_event(84, 0, win32con.KEYEVENTF_KEYUP, 0)
+    win32api.keybd_event(17, 0, win32con.KEYEVENTF_KEYUP, 0)  # 释放按键
+
+
+def fs():
+    excel()
+    time.sleep(1)
+    ctrl_c()
+    time.sleep(1)
+    wei_xin()
+    time.sleep(1)
+    ssk()
+    time.sleep(1)
+    ctrl_v()
+    time.sleep(1)
+    enter()
+    time.sleep(1)
+    excel()
+    time.sleep(1)
+    gz()
+    time.sleep(1)
+    ctrl_c()
+    time.sleep(1)
+    xy()
+    time.sleep(1)
+    wei_xin()
+    time.sleep(1)
+    ctrl_v()
+    time.sleep(1)
+    enter()
+    time.sleep(1)
+
+
+def xy():
+    win32api.keybd_event(40, 0, 0, 0)    # ↓
+    win32api.keybd_event(40, 0, win32con.KEYEVENTF_KEYUP, 0)  # 释放按键
+
+
+def ssk():
+    win32api.SetCursorPos((zb[0], zb[1]))  # 鼠标移动到坐标点
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, zb[0], zb[1], 0, 0)  # 鼠标左键单击
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, zb[0], zb[1], 0, 0)
+
+
+g.msgbox("本软件为Ms科技有限公司公司使用.需配合Office Excel + 宏.""\n"
+         "使用过程中全程需要占用电脑.微信界面以及Excel界面不可最小化""\n"
+         "使用前请打开微信和Excel发工资表界面,将单元格选定第一个员工的名字""\n"
+         "请详细阅读每次弹窗内容""\n", title="使用须知", ok_button="已了解")
+ren = int(g.enterbox("确定发送工资条人数"))  # 确定发工资条的人数
+g.msgbox(msg='请在5秒内把鼠标移动到微信客户端搜索栏', title='微信搜索栏坐标确定', ok_button='我准备好了')
+time.sleep(5)
+zb = win32api.GetCursorPos()
+g.msgbox(msg='微信搜索栏坐标确定完毕', title='微信搜索栏坐标确定', ok_button='下一步')
+hwnd_title = dict()
+
+
+def get_all_hwnd(hwnd,mouse):
+    if win32gui.IsWindow(hwnd) and win32gui.IsWindowEnabled(hwnd) and win32gui.IsWindowVisible(hwnd):
+        hwnd_title.update({hwnd: win32gui.GetWindowText(hwnd)})  # 设置获得所有窗口句柄的函数
+
+
+win32gui.EnumWindows(get_all_hwnd,0)  # 开始调用窗口句柄模块
+ct1 = []
+for h, t in hwnd_title.items():
+    if t is not "":
+        print(h, t)
+        ct1_list = [h, t]
+        ct1.append(ct1_list)   # 打印出所有窗口句柄信息并储存在列表里
+num1 = g.choicebox(msg='选择微信聊天窗体', title=' ', choices=ct1)  # gui窗口弹出选择窗口句柄选项, 获得微信窗口的句柄
+num3 = literal_eval(num1)  # 强制把num1的格式由str转化为list
+num2 = g.choicebox(msg='选择Excel聊天窗体', title=' ', choices=ct1)  # gui窗口弹出选择窗口句柄选项, 获得wps窗口的句柄
+num4 = literal_eval(num2)  # 强制把num2的格式由str转化为list
+'''主程序'''
+for i in range(1, ren+1):
+    fs()
