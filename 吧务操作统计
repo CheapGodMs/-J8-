@@ -1,0 +1,38 @@
+from selenium.webdriver.chrome.options import Options
+from selenium import webdriver
+import time
+import easygui as g
+import pandas as pd
+import os
+
+try:
+    os.system("taskkill /f /im chromedriver.exe /t")
+except:
+    pass  # 清理掉所有的chrome内核
+__browser_url = r"D:\Users\Administrator.DESKTOP-RE1S9G9\AppData\Local\360Chrome\Chrome\Application\360chrome.exe"  # 定义启动地址
+chrome_options = Options()  # 定义打开浏览器配置
+chrome_options.binary_location = __browser_url  # 确定打开浏览器路径
+user_data_dir = r'--user-data-dir=d:\users\administrator.desktop-re1s9g9\appdata\local\360chrome\chrome\User Data'  # 定义个人配置文件路径
+chrome_options.add_argument(user_data_dir)  # 加载个人配置
+driver = webdriver.Chrome(chrome_options=chrome_options)  # 开启浏览器
+bor = g.enterbox("请输入要查询的人员名单,用,链接")
+bor2 = bor.split("\n")  # 把名单用换行符分开
+# print(bor2)调试检测名单
+starttime = str(g.enterbox("从多久开始查"))
+endtime = str(g.enterbox("查到多久"))
+result = pd.DataFrame(columns=['ID', '操作量'])  # 输出结果表格
+driver.get('http://tieba.baidu.com/bawu2/platform/listBawuDel?word=%B5%D8%CF%C2%B3%C7%D3%EB%D3%C2%CA%BF')  # 进入DNF吧管理后台
+driver.find_element_by_id("endTime").send_keys(endtime)  # 输入开始时间
+driver.find_element_by_id("startTime").send_keys(starttime)  # 输入结束时间
+for bor3 in bor2:  # 打开网页
+    driver.find_element_by_id("nickname_input").clear()  # 清理输入框
+    driver.find_element_by_id("nickname_input").send_keys(bor3)  # 输入名单
+    driver.find_element_by_xpath(r'//*[@id="searchForm"]/span[1]/span[1]/label[2]/input').click()
+    driver.find_element_by_link_text('搜索').click()
+    two = driver.find_element_by_xpath(r'//*[@id="container"]/div[2]/div[2]/div[1]/em')
+# .send_keys("selenium" + Keys.RETURN)  # 找到id=kw的元素，然后键入selenium，回车
+    time.sleep(1)
+    result = result.append(pd.DataFrame({'ID': [bor3], '操作量': [two.text]}))
+    print(bor3, two.text)
+result.to_csv(str(starttime) + '.csv', index=False)
+driver.quit()
