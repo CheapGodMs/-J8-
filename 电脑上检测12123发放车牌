@@ -1,0 +1,77 @@
+import win32gui
+import pytesseract
+from PIL import Image
+from PIL import ImageGrab
+import pywinauto
+import time
+import win32con
+import win32clipboard as w
+import easygui as g
+from ast import literal_eval
+import win32api
+
+hwnd_title = dict()
+def get_all_hwnd(hwnd, mouse):
+    if win32gui.IsWindow(hwnd) and win32gui.IsWindowEnabled(hwnd) and win32gui.IsWindowVisible(hwnd):
+        hwnd_title.update({hwnd: win32gui.GetWindowText(hwnd)})  #设置获得所有窗口句柄的函数
+win32gui.EnumWindows(get_all_hwnd, 0)                            #开始调用窗口句柄模块
+ct1 =[]
+for h, t in hwnd_title.items():
+    if t is not "":
+        print(h, t)
+        ct1_list = [h,t]
+        ct1.append(ct1_list)   #打印出所有窗口句柄信息并储存在列表里
+num=g.choicebox(msg='选择QQ窗体', title=' ', choices=ct1)  #gui窗口弹出选择窗口句柄选项
+num2 =literal_eval(num)  #强制把num的格式由str转化为list
+g.msgbox(msg='3秒钟后鼠标移动到要截图的左上角', title=' ', ok_button='我已经准备好了', image=None, root=None)  #弹窗提示确认鼠标坐标
+time.sleep(3)  #等3s
+zuobiao1 = win32api.GetCursorPos()  #获得左上角鼠标坐标信息
+g.msgbox(msg='3秒钟后鼠标移动到要截图的右下角', title=' ', ok_button='我已经准备好了', image=None, root=None)  #弹窗提示确认鼠标坐标
+time.sleep(3)  #等3s
+zuobiao2 = win32api.GetCursorPos()  #获得右下角鼠标坐标信息
+zuobiao3=zuobiao1+zuobiao2  #融合两个坐标，坐标格式为tuple，确定要截图的截图位置
+ren=str(g.enterbox("要发送给谁？"))
+zzl =1  #确定无限循环主体
+while zzl==1:
+    pywinauto.mouse.click(button='left', coords=(570, 300))  #打开12123
+    time.sleep(8)                                            #等待7s
+    pywinauto.mouse.click(button='left', coords=(830, 380))  #打开号段公布
+    time.sleep(2)
+    bbox = zuobiao3                              #确定固定区域坐标（可更改参数）
+    im = ImageGrab.grab(bbox)                                #截图该区域
+    im.save('as1.png')                                       # 参数 保存截图文件的路径保存为as1
+    text1=pytesseract.image_to_string(Image.open(r"C:\Users\Administrator.DESKTOP-RE1S9G9\PycharmProjects\tiebazdh\as1.png"),lang='chi_sim')  #ocr文件as1
+    print(text1)                                             #得到as1的ocr数据
+    time.sleep(200)                                          #等待4分钟确保模拟器自动退出12123
+    pywinauto.mouse.click(button='left', coords=(570, 300))  #再次打开12123
+    time.sleep(8)                                            #等待7s
+    pywinauto.mouse.click(button='left', coords=(830, 380))  #打开号段公布
+    time.sleep(2)                                            #等待2S
+    im = ImageGrab.grab(bbox)                                #截图之前一样的区域
+    im.save('as2.png')                                       # 参数 保存截图文件的路径保存为as2
+    text2=pytesseract.image_to_string(Image.open(r"C:\Users\Administrator.DESKTOP-RE1S9G9\PycharmProjects\tiebazdh\as2.png"),lang='chi_sim')  #ocr文件as2
+    text3='交管所公布的新号段是:'+text2                          #确定输出消息内容
+    if text1!=text2 :                                        #假如2次ocr数据不一致
+        win32gui.SetForegroundWindow(num2[0])                 #切换到QQ窗口句柄
+        time.sleep(2)                                        #必须等待2s！！否则没法反映过来！！
+        class QQMessageSend:
+            def send_message(self, msg):
+                name = ren                         #选择号窗口名字，就是备注名
+                w.OpenClipboard()
+                w.EmptyClipboard()
+                w.SetClipboardData(win32con.CF_UNICODETEXT, msg)
+                w.CloseClipboard()                           #将测试消息复制到剪切板中（这一步似乎可以优化）
+                handle = win32gui.FindWindow(None, name)     #获取窗口句柄
+                win32gui.SendMessage(handle, 770, 0, 0)      #填充消息
+                win32gui.SendMessage(handle, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)  #回车发送消息
+            def main(self):
+                msg = text3                             # 消息内容
+                # 循环发送
+                for i in range(1):                      #可注释掉
+                    self.send_message(msg)
+        if __name__ == '__main__':
+            qq_message_send = QQMessageSend()
+            qq_message_send.main()
+        print(text2)
+    else:                                                    #否则就执行
+        print("没发布号段")                                    #软件提示没有发布新号段
