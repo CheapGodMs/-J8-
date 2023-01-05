@@ -1,0 +1,12 @@
+import cv2
+
+img = cv2.imread('mk_img_front_1608530164.jpg', cv2.IMREAD_COLOR)  # 打开文件
+
+font = cv2.FONT_HERSHEY_DUPLEX  # 设置字体
+fz = input("请输入信息")
+# 图片对象、文本、像素、字体、字体大小、颜色、字体粗细
+imgzi = cv2.putText(img, fz, (120,500), font, 1, (0, 0, 0), 2, )
+
+cv2.imwrite('result.jpg', img)  # 写磁盘
+cv2.waitKey(0)  # 窗口无限等待
+cv2.destroyAllWindows()  # 毁掉所有窗口
